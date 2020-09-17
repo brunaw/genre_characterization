@@ -1,0 +1,426 @@
+---
+title: "Feature Engineering for Genre Characterization in Brazilian Music"
+author: "Bruna Wundervald"
+output:
+  xaringan::moon_reader:
+    css: ["default", "css/penguin.css", "css/fonts.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: solarized-light
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+      beforeInit: "https://platform.twitter.com/widgets.js"
+    seal: false 
+    includes:
+      in_header: header.html
+editor_options: 
+  chunk_output_type: console
+header-includes:
+  - \usepackage[fleqn]{amsmath}
+  - \usepackage{float}
+  - \usepackage{graphicx}
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(knitr)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, 
+                      echo = FALSE, cache = TRUE, 
+                      fig.align = 'center')
+# options(knitr.table.format = "html")
+library(tidyverse)
+library(RefManageR)
+bibs <- ReadBib("refs.bib", check = FALSE)
+```
+
+layout: true
+  
+<div class="my-footer"><span>https://github.com/brunaw/genre_characterization</span></div>
+
+<!-- this adds the link footer to all slides, depends on my-footer class in css-->
+
+---
+name: bookdown-title
+
+<br>
+<br>
+
+.pull-left[
+<div class="column">
+<img src="img/MU_logo.png" width="350">
+</div>
+]
+
+
+<br>
+<br>
+<br>
+<br>
+
+<br>
+<br>
+<br>
+<br>
+<br>
+
+### .fancy[Feature Engineering for Genre Characterization in Brazilian Music]
+
+.large[Bruna Wundervald | Maynooth University | `r format(Sys.Date()+1, "%b %d, %Y")`]
+
+<!-- this ends up being the title slide since seal = FALSE-->
+
+
+---
+exclude: true
+name: lifecycle
+
+individual files:
+
+.Rmd to .md (via knitr)
+
+.md to HTML (via pandoc)
+
+
+
+HTML to lots of HTML --> BOOK (via bookdown)
+
+---
+class: inverse, middle
+
+### .fancy[Summary]
+
+  - Introduction
+    - Research questions
+  
+  - Definitions
+    - Data
+    - Manually Extracted Features
+    - Machine Learning Algorithm
+  
+  - Results 
+  
+  - Conclusions
+  
+
+---
+class: inverse, middle, center
+
+### .fancy[Introduction]
+
+  
+---
+# Introduction
+
+- Many factors are involved in the configuration of a music genre, such as style, historical context, and harmonic structures (`r Citet(bibs[key = "Caldas2010"])`)
+
+- Defining music genres is not a trivial task, and is
+an important problem in various aspects of music studies 
+
+
+>  The focus of this work is towards **verifying the connection between harmonic information and genre specification in Brazilian music**, through the evaluation of feature importance in machine learning models
+
+- Mid-level music features such as chords configure a rich resource of information regarding genres
+(`r Citet(bibs[key = "Cheng2008"])`, 
+`r Citet(bibs[key = "Correa2016"])`)
+
+- We use symbolic chords data and manually extracted harmonic features for genre classification
+
+  - **The features represent the chords structures in different and meaningful ways**
+
+---
+class: inverse, middle, center
+
+### .fancy[Definitions]
+
+---
+
+## Data
+
+> Type: **Symbolic chords sequences for each song**
+
+<br>
+
+- The chords are extracted from the Cifraclub, 
+an online collaborative page of music-sharing, through
+the `chorrrds` (`r Citet(bibs[key = "chorrrds"])`)
+package for `R` (`r Citet(bibs[key = "Rsoftware"])`)
+
+  -  Crowd-sourced data is becoming more common in the literature  (e.g. `r Citet(bibs[key = "odekerken2020decibel"])`)
+  
+
+- In total, **8 music genres** were used: Reggae, Pop, Forró, Bossa Nova, Sertanejo, MPB, Rock, and Samba
+
+- **106 different artists** were available on the online platform, for which the chords and keys for **8339 songs** were collected
+
+---
+
+## Manually Extracted Features
+
+- Interpretable summary features from the chords, to make them
+more informative
+
+.pull-left[
+
+**First set, triads and simple tetrads:**
+- percentage of suspended chords (e.g. Gsus), 
+- of chords with the seventh (e.g. C7), 
+- of minor chords with the seventh (e.g. Em7, C#m7), 
+- of minor (e.g. Em, C#m), 
+- of diminished (e.g. Bdim)
+- and of augmented (e.g. Baug) chords
+
+**Second set, Tetrads:** 
+- percentage of chords with the fourth (e.g. D4), 
+- the sixth (e.g. E6), 
+- the ninth (e.g. G9), 
+- with the major seventh (e.g. F7+, Am7+), 
+- with a diminished fifth (e.g. C5- or C5b) 
+- and with an augmented fifth (e.g. C5+ or C5#)
+]
+
+.pull-right[
+
+```{r, eval = TRUE, out.height="100%", out.width="100%", fig.cap="Feature extraction example"}
+knitr::include_graphics("img/feat_example.png")
+```
+]
+
+
+---
+
+## Manually Extracted Features
+
+**Third set, main chord transitions:**
+- percentage of the first, second, and third most common chord transitions in the song
+
+**Fourth set, miscellany:**
+- popularity, 
+- total of non-distinct chords, 
+- year of album release, 
+- indicator of the key of the song being the same as the most common chord, 
+- percentage of chords with varying bass (e.g. C/E, C/G, C/Bb), 
+- mean distance of the root note to ’C’ in the circle of fifths, 
+- mean distance of the root note to ’C’ in semitones, 
+- absolute number of the most common chord
+
+<br>
+
+> Supplementary features about the release year and popularity were obtained with the help of the well-known **Spotify API**
+
+---
+
+## Machine Learning Algorithm
+
+> Popular Random Forest (`r Citet(bibs[key = "Breiman2001"])`) model
+
+-  Characterized by being a tree ensemble
+that only allows
+a random subset $m$ of the features to be the candidates for a split, helping to create uncorrelated trees
+
+- The model equation can be written as 
+$$\hat f(\mathbf{x}) = \sum_{n = 1}^{N_{\text{tree}}} \frac{1}{N_{\text{tree}}} \hat f_n(\mathbf{x}),$$
+
+where $\hat f_n$ corresponds to the $n$-th estimated tree, out
+of a total of $N_{\text{tree}}$ trees, and $\mathbf{x}$ is the
+feature set 
+
+> **Advantage**: We can easily access the importance (misclassification
+reduction) for each feature used in the model
+
+---
+class: inverse, middle, center
+
+### .fancy[Results]
+
+
+---
+
+# Results
+
+- Four models were created in a nested fashion, with each new model being added with one of the features sets 
+
+- Table 1 shows that, for all different models, there is evidence of their accuracy being significantly higher the non-information classification rate
+  - The addition of the feature sets progressively increases the accuracy of the models
+  - This shows how the 4 set of features are informative in predicting the music genres
+
+```{r,  results='asis'}
+library(kableExtra)
+library(formattable)
+library(huxtable)
+
+tab <- data.frame(
+  Model = paste0("Model ", 1:4), 
+  Accuracy = c(0.53, 0.57, 0.59, 0.6), 
+  L.B. = c(0.51, 0.54, 0.56, 0.6), 
+  U.B. = c(0.55, 0.59, 0.6, 0.64), 
+  Kappa = c(0.37, 0.42, 0.44, 0.49), 
+  P.Value = rep("<0.0001", 4))
+
+# tab %>% 
+#     kbl(escape = FALSE, align = "c", 
+#                caption="Table 1. Goodness of fit for the four models: overall accuracy with lower and upper bounds and Kappa statistic with the respective p-value.") %>%
+#   kable_styling(bootstrap_options = c("hover")) %>%
+#   column_spec(2, width = "3cm") %>% 
+#   column_spec(1, width = "2cm")  %>% 
+#   column_spec(3, width = "1.5cm") %>% 
+#   column_spec(4, width = "1.5cm") %>% 
+#   column_spec(5, width = "2cm") %>% 
+#   column_spec(6, width = "2cm") 
+
+names(tab)[6] <- "p-value"
+
+tab %>% 
+  as_huxtable() %>%
+  #set_bold(2:9, 1) %>%  
+  set_bold(everywhere, 1) %>%  
+  set_outer_borders(0.4) %>% 
+  set_align(everywhere, 2:5, 'center')   %>%
+  set_text_color(2:5, 6, "#1fa6a0") %>% 
+  set_bold(2:5, 6) %>%  
+  theme_article() 
+```
+
+---
+class: middle
+
+- From Table 2, we can see that there is considerable
+confusion between MPB and Bossa Nova, highlighting their 
+known harmonic similarities
+- The same happens to Forró, Sertanejo
+and Pop, which are music genres with a similar origin and,
+in general, more elementary harmonic structures
+
+
+```{r, results='asis'}
+
+tab <- t(data.frame(
+ BossaNova = c(
+   0.28 , 0.00 , 0.40 , 0.00 , 0.00 , 0.05 , 0.16 , 0.12), 
+ Forro = c (0.00 , 0.00, 0.12 , 0.00 , 0.00 , 0.12 , 0.10 , 0.65),
+  MPB = c(0.01 , 0.00 , 0.59, 0.00 , 0.00 , 0.11 , 0.13 , 0.15),
+  Pop = c(0.00 , 0.00 , 0.13 , 0.00 , 0.00 , 0.28 , 0.15 , 0.44), 
+  Reggae = c(0.00 , 0.00 , 0.25 , 0.00 , 0.08 , 0.46 , 0.08 , 0.12),  
+  Rock = c(0.00 , 0.00 , 0.16 , 0.00 , 0.00 , 0.43, 0.05 , 0.35), 
+  Samba = c(0.01 , 0.00 , 0.20 , 0.00 , 0.00 , 0.03 , 0.66, 0.10), 
+  Sertanejo = c(0.00 , 0.00 , 0.02 , 0.00 , 0.00 , 0.07, 0.02, 0.89))) 
+
+rownames(tab)[1:2] <- c("Bossa Nova", "Forró")
+nam <- rownames(tab)
+tab <- tab %>% 
+    as.data.frame() %>% 
+  mutate_all(~ paste0(.x * 100, "%")) 
+colnames(tab) <- nam 
+rownames(tab) <- nam
+
+# tab %>% 
+#     kbl(escape = FALSE, align = "c", 
+#                caption="Table 2. Confusion matrix for the model with all the features.") %>%
+#   kable_styling(bootstrap_options = c("hover"))
+
+
+tab %>% 
+  as_huxtable(add_rownames = "Genre") %>%
+  #insert_row("Genres", fill = "", colspan = 8) %>% 
+  set_bold(1, everywhere, TRUE) %>% 
+  set_all_borders(1) %>%  
+  set_bold(2:9, 1) %>%  
+  set_text_color(2, 2, "#1fa6a0") %>% 
+  set_text_color(3, 3, "#1fa6a0") %>% 
+  set_text_color(4, 4, "#1fa6a0") %>% 
+  set_text_color(5, 5, "#1fa6a0") %>% 
+  set_text_color(6, 6, "#1fa6a0") %>% 
+  set_text_color(7, 7, "#1fa6a0") %>% 
+  set_text_color(8, 8, "#1fa6a0") %>% 
+  set_text_color(9, 9, "#1fa6a0") %>% 
+  set_bold(2, 2) %>%  
+  set_bold(3, 3) %>%  
+  set_bold(4, 4) %>%  
+  set_bold(5, 5) %>%  
+  set_bold(6, 6) %>%  
+  set_bold(7, 7) %>%  
+  set_bold(8, 8) %>%  
+  set_bold(9, 9) %>%  
+  set_align(everywhere, 2:9, 'center')   %>%
+  set_outer_borders(0.4) %>% 
+  theme_article()
+```
+
+
+---
+class: middle
+
+
+.pull-left[
+```{r, out.height="100%", out.width="100%", fig.cap="Figure 1. Importance plot for the fourth model with all the features. The top part of the plot is dominated by the harmonic features."}
+knitr::include_graphics("img/imp_m3.png")
+```
+]
+
+.pull-right[
+
+- Figure 1 shows that the first set of features is the most informative one
+  - With the basic chords information we can already obtain good results in terms of informing the model about the genres
+  
+- The external features (year and popularity),
+got a high rank in the plot, showing how the Spotify data is also pertinent
+
+- The position of the transitions and distances variables strengthens the idea of harmonic characteristics being very important to discriminate between music genres
+]
+---
+class: inverse, middle, center
+
+### .fancy[Conclusions]
+
+---
+
+# Conclusions
+
+- Manually engineered harmonic features can be useful to characterize Brazilian music genres
+
+- The **most discriminative** features are:
+  - the percentage of chords with the seventh note, 
+  - of minor chords with the seventh note, 
+  - of minor chords,
+  - the year of release of the songs, 
+  - the popularity 
+  - and the behavior of the most common chord transitions
+  
+- Our insights can be extended to other music genres that influenced or were influenced by the genres considered here, such as Jazz, Pop, and Rock music
+
+- Next steps of this work include the engineering of the new variables and applying different machine learning algorithms, as well as exploring more the use of chords crowdsourced data 
+
+
+Links:
+  - [To code and data](https://github.com/brunaw/genre_classification)
+  - [To presentation repository](https://github.com/brunaw/genre_characterization)
+  
+
+---
+ 
+# References
+
+
+```{r, echo = FALSE, eval = TRUE, results='asis'}
+print(bibs[key = c("Caldas2010", "Cheng2008",
+                   "odekerken2020decibel", 
+                   "Correa2016", "chorrrds", "Rsoftware",
+                   "Breiman2001")], 
+      .opts = list(check.entries = FALSE, 
+                   style = "html", 
+                   bib.style = "authoryear"))
+```
+
+
+
+---
+
+
+class: middle, center, inverse
+
+<font size="60">Thanks! </font>
+
+<p>
+
+
+ 

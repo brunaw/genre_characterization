@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Feature Engineering for Genre Characterization in Brazilian Music</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Bruna Wundervald" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <script defer src="https://use.fontawesome.com/releases/v5.6.1/js/all.js" integrity="sha384-R5JkiUweZpJjELPWqttAYmYM1P3SNEJRM6ecTQF05pFFtxmCO+Y1CiUhvuDzgSVZ" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/penguin.css" type="text/css" />
+    <link rel="stylesheet" href="css/fonts.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+layout: true
+  
+&lt;div class="my-footer"&gt;&lt;span&gt;https://github.com/brunaw/genre_characterization&lt;/span&gt;&lt;/div&gt;
+
+&lt;!-- this adds the link footer to all slides, depends on my-footer class in css--&gt;
+
+---
+name: bookdown-title
+
+&lt;br&gt;
+&lt;br&gt;
+
+.pull-left[
+&lt;div class="column"&gt;
+&lt;img src="img/MU_logo.png" width="350"&gt;
+&lt;/div&gt;
+]
+
+
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+
+### .fancy[Feature Engineering for Genre Characterization in Brazilian Music]
+
+.large[Bruna Wundervald | Maynooth University | Sep 18, 2020]
+
+&lt;!-- this ends up being the title slide since seal = FALSE--&gt;
+
+
+---
+exclude: true
+name: lifecycle
+
+individual files:
+
+.Rmd to .md (via knitr)
+
+.md to HTML (via pandoc)
+
+
+
+HTML to lots of HTML --&gt; BOOK (via bookdown)
+
+---
+class: inverse, middle
+
+### .fancy[Summary]
+
+  - Introduction
+    - Research questions
+  
+  - Definitions
+    - Data
+    - Manually Extracted Features
+    - Machine Learning Algorithm
+  
+  - Results 
+  
+  - Conclusions
+  
+
+---
+class: inverse, middle, center
+
+### .fancy[Introduction]
+
+  
+---
+# Introduction
+
+- Many factors are involved in the configuration of a music genre, such as style, historical context, and harmonic structures (Caldas (2010))
+
+- Defining music genres is not a trivial task, and is
+an important problem in various aspects of music studies 
+
+
+&gt;  The focus of this work is towards **verifying the connection between harmonic information and genre specification in Brazilian music**, through the evaluation of feature importance in machine learning models
+
+- Mid-level music features such as chords configure a rich resource of information regarding genres
+(Cheng, Yang, Lin, Liao, and Chen (2008), 
+Corrêa and Rodrigues (2016))
+
+- We use symbolic chords data and manually extracted harmonic features for genre classification
+
+  - **The features represent the chords structures in different and meaningful ways**
+
+---
+class: inverse, middle, center
+
+### .fancy[Definitions]
+
+---
+
+## Data
+
+&gt; Type: **Symbolic chords sequences for each song**
+
+&lt;br&gt;
+
+- The chords are extracted from the Cifraclub, 
+an online collaborative page of music-sharing, through
+the `chorrrds` (Wundervald (2018))
+package for `R` (R Core Team (2018))
+
+  -  Crowd-sourced data is becoming more common in the literature  (e.g. Odekerken, Koops, and Volk (2020))
+  
+
+- In total, **8 music genres** were used: Reggae, Pop, Forró, Bossa Nova, Sertanejo, MPB, Rock, and Samba
+
+- **106 different artists** were available on the online platform, for which the chords and keys for **8339 songs** were collected
+
+---
+
+## Manually Extracted Features
+
+- Interpretable summary features from the chords, to make them
+more informative
+
+.pull-left[
+
+**First set, triads and simple tetrads:**
+- percentage of suspended chords (e.g. Gsus), 
+- of chords with the seventh (e.g. C7), 
+- of minor chords with the seventh (e.g. Em7, C#m7), 
+- of minor (e.g. Em, C#m), 
+- of diminished (e.g. Bdim)
+- and of augmented (e.g. Baug) chords
+
+**Second set, Tetrads:** 
+- percentage of chords with the fourth (e.g. D4), 
+- the sixth (e.g. E6), 
+- the ninth (e.g. G9), 
+- with the major seventh (e.g. F7+, Am7+), 
+- with a diminished fifth (e.g. C5- or C5b) 
+- and with an augmented fifth (e.g. C5+ or C5#)
+]
+
+.pull-right[
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="img/feat_example.png" alt="Feature extraction example" width="100%" height="100%" /&gt;
+&lt;p class="caption"&gt;Feature extraction example&lt;/p&gt;
+&lt;/div&gt;
+]
+
+
+---
+
+## Manually Extracted Features
+
+**Third set, main chord transitions:**
+- percentage of the first, second, and third most common chord transitions in the song
+
+**Fourth set, miscellany:**
+- popularity, 
+- total of non-distinct chords, 
+- year of album release, 
+- indicator of the key of the song being the same as the most common chord, 
+- percentage of chords with varying bass (e.g. C/E, C/G, C/Bb), 
+- mean distance of the root note to ’C’ in the circle of fifths, 
+- mean distance of the root note to ’C’ in semitones, 
+- absolute number of the most common chord
+
+&lt;br&gt;
+
+&gt; Supplementary features about the release year and popularity were obtained with the help of the well-known **Spotify API**
+
+---
+
+## Machine Learning Algorithm
+
+&gt; Popular Random Forest (Breiman (2001)) model
+
+-  Characterized by being a tree ensemble
+that only allows
+a random subset `\(m\)` of the features to be the candidates for a split, helping to create uncorrelated trees
+
+- The model equation can be written as 
+`$$\hat f(\mathbf{x}) = \sum_{n = 1}^{N_{\text{tree}}} \frac{1}{N_{\text{tree}}} \hat f_n(\mathbf{x}),$$`
+
+where `\(\hat f_n\)` corresponds to the `\(n\)`-th estimated tree, out
+of a total of `\(N_{\text{tree}}\)` trees, and `\(\mathbf{x}\)` is the
+feature set 
+
+&gt; **Advantage**: We can easily access the importance (misclassification
+reduction) for each feature used in the model
+
+---
+class: inverse, middle, center
+
+### .fancy[Results]
+
+
+---
+
+# Results
+
+- Four models were created in a nested fashion, with each new model being added with one of the features sets 
+
+- Table 1 shows that, for all different models, there is evidence of their accuracy being significantly higher the non-information classification rate
+  - The addition of the feature sets progressively increases the accuracy of the models
+  - This shows how the 4 set of features are informative in predicting the music genres
+
+<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-2">
+<col><col><col><col><col><col><tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Model</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">Accuracy</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">L.B.</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">U.B.</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">Kappa</th><th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 0pt 6pt 6pt; font-weight: bold;">p-value</th></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Model 1</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.53</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.51</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.55</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.37</td><td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 0pt 6pt 6pt; font-weight: bold;"><span style="color: rgb(31, 166, 160);">&lt;0.0001</span></td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Model 2</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.57</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.54</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.59</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.42</td><td style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 0pt 6pt 6pt; font-weight: bold;"><span style="color: rgb(31, 166, 160);">&lt;0.0001</span></td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Model 3</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.59</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.56</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.6</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.44</td><td style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 0pt 6pt 6pt; font-weight: bold;"><span style="color: rgb(31, 166, 160);">&lt;0.0001</span></td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Model 4</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.6</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.6</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.64</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.49</td><td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 0pt 6pt 6pt; font-weight: bold;"><span style="color: rgb(31, 166, 160);">&lt;0.0001</span></td></tr>
+</table>
+
+
+---
+class: middle
+
+- From Table 2, we can see that there is considerable
+confusion between MPB and Bossa Nova, highlighting their 
+known harmonic similarities
+- The same happens to Forró, Sertanejo
+and Pop, which are music genres with a similar origin and,
+in general, more elementary harmonic structures
+
+
+<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-3">
+<col><col><col><col><col><col><col><col><col><tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Genre</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">Bossa Nova</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">Forró</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">MPB</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">Pop</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">Reggae</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">Rock</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">Samba</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 0pt 6pt 6pt; font-weight: bold;">Sertanejo</th></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Bossa Nova</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;"><span style="color: rgb(31, 166, 160);">28%</span></td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">40%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">5%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">16%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 0pt 6pt 6pt; font-weight: normal;">12%</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Forró</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: bold;"><span style="color: rgb(31, 166, 160);">0%</span></td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">12%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">12%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">10%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 0pt 6pt 6pt; font-weight: normal;">65%</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 0pt; font-weight: bold;">MPB</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">1%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: bold;"><span style="color: rgb(31, 166, 160);">59%</span></td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">11%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">13%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 0pt 6pt 6pt; font-weight: normal;">15%</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Pop</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">13%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: bold;"><span style="color: rgb(31, 166, 160);">0%</span></td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">28%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">15%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 0pt 6pt 6pt; font-weight: normal;">44%</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Reggae</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">25%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: bold;"><span style="color: rgb(31, 166, 160);">8%</span></td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">46%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">8%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 0pt 6pt 6pt; font-weight: normal;">12%</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Rock</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">16%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: bold;"><span style="color: rgb(31, 166, 160);">43%</span></td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">5%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 0pt 6pt 6pt; font-weight: normal;">35%</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Samba</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">1%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">20%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">3%</td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: bold;"><span style="color: rgb(31, 166, 160);">66%</span></td><td style="vertical-align: top; text-align: center; white-space: normal; padding: 6pt 0pt 6pt 6pt; font-weight: normal;">10%</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 0pt; font-weight: bold;">Sertanejo</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">2%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">7%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">2%</td><td style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 0pt 6pt 6pt; font-weight: bold;"><span style="color: rgb(31, 166, 160);">89%</span></td></tr>
+</table>
+
+
+
+---
+class: middle
+
+
+.pull-left[
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="img/imp_m3.png" alt="Figure 1. Importance plot for the fourth model with all the features. The top part of the plot is dominated by the harmonic features." width="100%" height="100%" /&gt;
+&lt;p class="caption"&gt;Figure 1. Importance plot for the fourth model with all the features. The top part of the plot is dominated by the harmonic features.&lt;/p&gt;
+&lt;/div&gt;
+]
+
+.pull-right[
+
+- Figure 1 shows that the first set of features is the most informative one
+  - With the basic chords information we can already obtain good results in terms of informing the model about the genres
+  
+- The external features (year and popularity),
+got a high rank in the plot, showing how the Spotify data is also pertinent
+
+- The position of the transitions and distances variables strengthens the idea of harmonic characteristics being very important to discriminate between music genres
+]
+---
+class: inverse, middle, center
+
+### .fancy[Conclusions]
+
+---
+
+# Conclusions
+
+- Manually engineered harmonic features can be useful to characterize Brazilian music genres
+
+- The **most discriminative** features are:
+  - the percentage of chords with the seventh note, 
+  - of minor chords with the seventh note, 
+  - of minor chords,
+  - the year of release of the songs, 
+  - the popularity 
+  - and the behavior of the most common chord transitions
+  
+- Our insights can be extended to other music genres that influenced or were influenced by the genres considered here, such as Jazz, Pop, and Rock music
+
+- Next steps of this work include the engineering of the new variables and applying different machine learning algorithms, as well as exploring more the use of chords crowdsourced data 
+
+
+Links:
+  - [To code and data](https://github.com/brunaw/genre_classification)
+  - [To presentation repository](https://github.com/brunaw/genre_characterization)
+  
+
+---
+ 
+# References
+
+
+&lt;p&gt;&lt;cite&gt;&lt;a id='bib-Breiman2001'&gt;&lt;/a&gt;&lt;a href="#cite-Breiman2001"&gt;Breiman, L.&lt;/a&gt;
+(2001).
+&amp;ldquo;Random forests&amp;rdquo;.
+In: &lt;em&gt;Machine Learning&lt;/em&gt;.
+ISSN: 08856125.
+DOI: &lt;a href="https://doi.org/10.1023/A:1010933404324"&gt;10.1023/A:1010933404324&lt;/a&gt;.
+eprint: /dx.doi.org/10.1023%2FA%3A1010933404324.&lt;/cite&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;cite&gt;&lt;a id='bib-Caldas2010'&gt;&lt;/a&gt;&lt;a href="#cite-Caldas2010"&gt;Caldas, W.&lt;/a&gt;
+(2010).
+&lt;em&gt;Iniciação à Música Popular Brasileira&lt;/em&gt;.
+Vol. 1.&lt;/cite&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;cite&gt;&lt;a id='bib-Cheng2008'&gt;&lt;/a&gt;&lt;a href="#cite-Cheng2008"&gt;Cheng, H., Y. Yang, Y. Lin, et al.&lt;/a&gt;
+(2008).
+&amp;ldquo;Automatic chord recognition for music classification and retrieval&amp;rdquo;.
+In: 
+&lt;em&gt;2008 IEEE International Conference on Multimedia and Expo&lt;/em&gt;.
+IEEE.
+, pp. 1505&amp;ndash;1508.&lt;/cite&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;cite&gt;&lt;a id='bib-Correa2016'&gt;&lt;/a&gt;&lt;a href="#cite-Correa2016"&gt;Corrêa, D. C. and F. A. Rodrigues&lt;/a&gt;
+(2016).
+&lt;em&gt;A survey on symbolic data-based music genre classification&lt;/em&gt;.
+DOI: &lt;a href="https://doi.org/10.1016/j.eswa.2016.04.008 Short Survey"&gt;10.1016/j.eswa.2016.04.008 Short Survey&lt;/a&gt;.&lt;/cite&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;cite&gt;&lt;a id='bib-odekerken2020decibel'&gt;&lt;/a&gt;&lt;a href="#cite-odekerken2020decibel"&gt;Odekerken, D, H. V. Koops, and A. Volk&lt;/a&gt;
+(2020).
+&amp;ldquo;DECIBEL: Improving Audio Chord Estimation for Popular Music by Alignment and Integration of Crowd-Sourced Symbolic Representations&amp;rdquo;.
+In: &lt;em&gt;arXiv preprint arXiv:2002.09748&lt;/em&gt;.&lt;/cite&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;cite&gt;&lt;a id='bib-Rsoftware'&gt;&lt;/a&gt;&lt;a href="#cite-Rsoftware"&gt;R Core Team&lt;/a&gt;
+(2018).
+&lt;em&gt;R: A Language and Environment for Statistical Computing&lt;/em&gt;.
+R Foundation for Statistical Computing.
+Vienna, Austria.
+URL: &lt;a href="https://www.R-project.org/"&gt;https://www.R-project.org/&lt;/a&gt;.&lt;/cite&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;cite&gt;&lt;a id='bib-chorrrds'&gt;&lt;/a&gt;&lt;a href="#cite-chorrrds"&gt;Wundervald, B.&lt;/a&gt;
+(2018).
+&lt;em&gt;The chorrrds package for extraction of music chords data in R&lt;/em&gt;.
+URL: &lt;a href="https://github.com/r-music/chorrrds"&gt;https://github.com/r-music/chorrrds&lt;/a&gt;.&lt;/cite&gt;&lt;/p&gt;
+
+
+
+---
+
+
+class: middle, center, inverse
+
+&lt;font size="60"&gt;Thanks! &lt;/font&gt;
+
+&lt;p&gt;
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "solarized-light",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
