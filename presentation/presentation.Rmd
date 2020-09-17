@@ -251,7 +251,7 @@ library(huxtable)
 
 tab <- data.frame(
   Model = paste0("Model ", 1:4), 
-  Accuracy = c(0.53, 0.57, 0.59, 0.6), 
+  Accuracy = c(0.53, 0.57, 0.59, 0.62), 
   L.B. = c(0.51, 0.54, 0.56, 0.6), 
   U.B. = c(0.55, 0.59, 0.6, 0.64), 
   Kappa = c(0.37, 0.42, 0.44, 0.49), 
@@ -365,7 +365,7 @@ knitr::include_graphics("img/imp_m3.png")
 - The external features (year and popularity),
 got a high rank in the plot, showing how the Spotify data is also pertinent
 
-- The position of the transitions and distances variables strengthens the idea of harmonic characteristics being very important to discriminate between music genres
+- The position of the transitions and distances features strengthens the idea of harmonic characteristics being very important to discriminate between music genres
 ]
 ---
 class: inverse, middle, center
